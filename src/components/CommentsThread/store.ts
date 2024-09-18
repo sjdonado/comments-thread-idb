@@ -34,7 +34,7 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-async function insert(text: Comment['text']): Promise<Comment> {
+async function addComment(text: Comment['text']): Promise<Comment> {
   const db = await openDatabase();
 
   return new Promise((resolve, reject) => {
@@ -62,7 +62,29 @@ async function insert(text: Comment['text']): Promise<Comment> {
   });
 }
 
+async function getAllComments(): Promise<Comment[]> {
+  const db = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      const comments = request.result as Comment[];
+      comments.sort((a, b) => b.id - a.id);
+
+      resolve(comments);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
 export default {
   openDatabase,
-  insert,
+  addComment,
+  getAllComments,
 };
