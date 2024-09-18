@@ -3,6 +3,7 @@ import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginReact from 'eslint-plugin-react';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import tailwind from 'eslint-plugin-tailwindcss';
 
 export default [
   { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },
@@ -11,4 +12,5 @@ export default [
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
   eslintPluginPrettierRecommended,
+  ...tailwind.configs['flat/recommended'],
 ];
