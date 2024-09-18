@@ -83,8 +83,27 @@ async function getAllComments(): Promise<Comment[]> {
   });
 }
 
+async function deleteComment(id: number): Promise<void> {
+  const db = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.delete(id);
+
+    request.onsuccess = () => {
+      resolve();
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
 export default {
   openDatabase,
   addComment,
   getAllComments,
+  deleteComment,
 };

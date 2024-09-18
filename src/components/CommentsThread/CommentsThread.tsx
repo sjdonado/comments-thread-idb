@@ -29,6 +29,20 @@ const CommentsThread: React.FC = () => {
     }
   };
 
+  const handleDeleteComment = async (id: number) => {
+    const isConfirmed = window.confirm('Are you sure you want to delete this comment?');
+
+    if (!isConfirmed) return;
+
+    try {
+      await Store.deleteComment(id);
+      setComments(comments.filter(comment => comment.id !== id));
+    } catch (e) {
+      alert('Failed to delete comment');
+      console.error(e);
+    }
+  };
+
   return (
     <div className="flex flex-col mt-10 gap-4">
       <textarea
@@ -43,8 +57,11 @@ const CommentsThread: React.FC = () => {
       </button>
       <ul className="space-y-4">
         {comments.map(comment => (
-          <li key={comment.id} className="border-b pb-2">
-            {comment.text}
+          <li key={comment.id} className="border-b pb-2 flex justify-between items-center">
+            <span>{comment.text}</span>
+            <button onClick={() => handleDeleteComment(comment.id)} className="text-red-500 hover:text-red-700">
+              Delete
+            </button>
           </li>
         ))}
       </ul>
