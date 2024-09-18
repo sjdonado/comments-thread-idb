@@ -6,6 +6,7 @@ const STORE_NAME = 'comments';
 const commentSchema = z.object({
   id: z.number(),
   text: z.string().min(1, 'Comment cannot be empty'),
+  parentId: z.number().nullable(),
 });
 
 export type Comment = z.infer<typeof commentSchema>;
@@ -34,7 +35,7 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-async function addComment(text: Comment['text']): Promise<Comment> {
+async function addComment(text: Comment['text'], parentId: Comment['parentId']): Promise<Comment> {
   const db = await openDatabase();
 
   return new Promise((resolve, reject) => {
@@ -42,7 +43,7 @@ async function addComment(text: Comment['text']): Promise<Comment> {
     const store = transaction.objectStore(STORE_NAME);
 
     try {
-      const comment = commentSchema.parse({ id: Date.now(), text });
+      const comment = commentSchema.parse({ id: Date.now(), text, parentId });
       const request = store.add(comment);
 
       request.onsuccess = () => {
