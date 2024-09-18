@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Comment } from './store';
 import Store from './store';
 
@@ -6,6 +6,7 @@ const CommentsThread: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState('');
   const [replyToId, setReplyToId] = useState<number | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const loadComments = async () => {
@@ -54,6 +55,21 @@ const CommentsThread: React.FC = () => {
     }
   };
 
+  const handleReply = (id: number) => {
+    setReplyToId(id);
+
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  const getReplyingToHint = () => {
+    if (!replyToId) return '';
+
+    const comment = comments.find(c => c.id === replyToId);
+    return comment ? `Replying to: "${comment.text}"` : '';
+  };
+
   const renderComments = (parentId: number | null, depth = 0) => {
     const filteredComments = comments.filter(c => c.parentId === parentId);
 
@@ -61,13 +77,13 @@ const CommentsThread: React.FC = () => {
       <ul className="[&>li]:pt-4">
         {filteredComments.map(comment => (
           <li key={comment.id} style={{ marginLeft: `${depth * 20}px` }}>
-            <div className="border-b pb-2">
+            <div className="flex flex-col border-b pb-2 gap-1">
               <span>{comment.text}</span>
-              <div className="flex space-x-2 mt-1">
-                <button onClick={() => setReplyToId(comment.id)} className="text-blue-500 hover:text-blue-700">
+              <div className="flex space-x-2">
+                <button className="text-blue-500 hover:text-blue-700" onClick={() => handleReply(comment.id)}>
                   Reply
                 </button>
-                <button onClick={() => handleDeleteComment(comment.id)} className="text-red-500 hover:text-red-700">
+                <button className="text-red-500 hover:text-red-700" onClick={() => handleDeleteComment(comment.id)}>
                   Delete
                 </button>
               </div>
@@ -77,13 +93,6 @@ const CommentsThread: React.FC = () => {
         ))}
       </ul>
     );
-  };
-
-  const getReplyingToHint = () => {
-    if (!replyToId) return '';
-
-    const comment = comments.find(c => c.id === replyToId);
-    return comment ? `Replying to: "${comment.text}"` : '';
   };
 
   return (
@@ -97,11 +106,18 @@ const CommentsThread: React.FC = () => {
         </div>
       )}
       <textarea
-        value={text}
-        onChange={e => setText(e.target.value)}
+        ref={textareaRef}
         rows={4}
         className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none"
         placeholder="Enter your comment"
+        value={text}
+        onChange={e => setText(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleAddComment();
+          }
+        }}
       />
       <button onClick={handleAddComment} className="mt-2 bg-blue-600 text-white py-1 px-4 rounded-lg">
         Submit
