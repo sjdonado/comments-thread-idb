@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+
 import type { Comment } from './store';
 import { Store } from './store';
 
 const CommentsThread: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState('');
-  const [replyToId, setReplyToId] = useState<number | null>(null);
+  const [replyToId, setReplyToId] = useState<Comment['id'] | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -23,7 +24,7 @@ const CommentsThread: React.FC = () => {
 
   const handleAddComment = async () => {
     try {
-      const newComment = await Store.addComment(text, replyToId);
+      const newComment = await Store.add(text, replyToId);
       setComments([newComment, ...comments]);
       setText('');
       setReplyToId(null);
@@ -32,12 +33,12 @@ const CommentsThread: React.FC = () => {
     }
   };
 
-  const handleDeleteComment = async (id: number) => {
+  const handleDeleteComment = async (id: Comment['id']) => {
     const isConfirmed = window.confirm('Are you sure you want to delete this comment?');
 
     if (!isConfirmed) return;
 
-    const deleteRecursively = async (commentId: number) => {
+    const deleteRecursively = async (commentId: Comment['id']) => {
       const childComments = comments.filter(c => c.parentId === commentId);
       for (const child of childComments) {
         await deleteRecursively(child.id);
@@ -55,7 +56,7 @@ const CommentsThread: React.FC = () => {
     }
   };
 
-  const handleReply = (id: number) => {
+  const handleReply = (id: Comment['id']) => {
     setReplyToId(id);
 
     if (textareaRef.current) {
@@ -70,15 +71,16 @@ const CommentsThread: React.FC = () => {
     return comment ? `Replying to: "${comment.text}"` : '';
   };
 
-  const renderComments = (parentId: number | null, depth = 0) => {
+  const renderComments = (parentId: Comment['parentId'], depth = 0) => {
     const filteredComments = comments.filter(c => c.parentId === parentId);
 
     return (
       <ul className="[&>li]:pt-4">
         {filteredComments.map(comment => (
           <li key={comment.id} style={{ marginLeft: `${depth * 20}px` }}>
-            <div className="flex flex-col border-b pb-2 gap-1">
-              <span>{comment.text}</span>
+            <div className="flex flex-col pb-2 gap-1">
+              <span className="text-xs">{comment.createdAt.toLocaleString()}</span>
+              <p>{comment.text}</p>
               <div className="flex space-x-2">
                 <button className="text-blue-500 hover:text-blue-700" onClick={() => handleReply(comment.id)}>
                   Reply

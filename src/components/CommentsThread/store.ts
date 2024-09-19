@@ -1,12 +1,14 @@
 import { z } from 'zod';
+import { v4 as uuid } from 'uuid';
 
 const DATABASE_NAME = 'comments-db';
 const STORE_NAME = 'comments';
 
 const commentSchema = z.object({
-  id: z.number(),
+  id: z.string().uuid(),
   text: z.string().min(1, 'Comment cannot be empty'),
-  parentId: z.number().nullable(),
+  parentId: z.string().uuid().nullable(),
+  createdAt: z.date(),
 });
 
 export type Comment = z.infer<typeof commentSchema>;
@@ -43,7 +45,12 @@ async function add(text: Comment['text'], parentId: Comment['parentId']): Promis
     const store = transaction.objectStore(STORE_NAME);
 
     try {
-      const comment = commentSchema.parse({ id: Date.now(), text, parentId });
+      const comment = commentSchema.parse({
+        id: uuid(),
+        text,
+        parentId,
+        createdAt: new Date(),
+      });
       const request = store.add(comment);
 
       request.onsuccess = () => {
@@ -73,7 +80,7 @@ async function getAll(): Promise<Comment[]> {
 
     request.onsuccess = () => {
       const comments = request.result as Comment[];
-      comments.sort((a, b) => b.id - a.id);
+      comments.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
       resolve(comments);
     };
@@ -84,7 +91,7 @@ async function getAll(): Promise<Comment[]> {
   });
 }
 
-async function remove(id: number): Promise<void> {
+async function remove(id: Comment['id']): Promise<void> {
   const db = await openDatabase();
 
   return new Promise((resolve, reject) => {
