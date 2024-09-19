@@ -35,7 +35,7 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-async function addComment(text: Comment['text'], parentId: Comment['parentId']): Promise<Comment> {
+async function add(text: Comment['text'], parentId: Comment['parentId']): Promise<Comment> {
   const db = await openDatabase();
 
   return new Promise((resolve, reject) => {
@@ -63,7 +63,7 @@ async function addComment(text: Comment['text'], parentId: Comment['parentId']):
   });
 }
 
-async function getAllComments(): Promise<Comment[]> {
+async function getAll(): Promise<Comment[]> {
   const db = await openDatabase();
 
   return new Promise((resolve, reject) => {
@@ -84,7 +84,7 @@ async function getAllComments(): Promise<Comment[]> {
   });
 }
 
-async function deleteComment(id: number): Promise<void> {
+async function remove(id: number): Promise<void> {
   const db = await openDatabase();
 
   return new Promise((resolve, reject) => {
@@ -102,9 +102,9 @@ async function deleteComment(id: number): Promise<void> {
   });
 }
 
-export default {
+export const Store = {
   openDatabase,
-  addComment,
-  getAllComments,
-  deleteComment,
+  add,
+  getAll,
+  remove,
 };

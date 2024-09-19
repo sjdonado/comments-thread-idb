@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Comment } from './store';
-import Store from './store';
+import { Store } from './store';
 
 const CommentsThread: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -11,10 +11,10 @@ const CommentsThread: React.FC = () => {
   useEffect(() => {
     const loadComments = async () => {
       try {
-        const loadedComments = await Store.getAllComments();
+        const loadedComments = await Store.getAll();
         setComments(loadedComments);
-      } catch (error) {
-        console.error('Failed to load comments:', error);
+      } catch (err) {
+        console.error('Failed to load comments:', err);
       }
     };
 
@@ -27,8 +27,8 @@ const CommentsThread: React.FC = () => {
       setComments([newComment, ...comments]);
       setText('');
       setReplyToId(null);
-    } catch (e) {
-      alert((e as Error).message);
+    } catch (err) {
+      alert((err as Error).message);
     }
   };
 
@@ -42,16 +42,16 @@ const CommentsThread: React.FC = () => {
       for (const child of childComments) {
         await deleteRecursively(child.id);
       }
-      await Store.deleteComment(commentId);
+      await Store.remove(commentId);
     };
 
     try {
       await deleteRecursively(id);
       const updatedComments = comments.filter(c => c.id !== id && c.parentId !== id);
       setComments(updatedComments);
-    } catch (e) {
+    } catch (err) {
       alert('Failed to delete comment');
-      console.error(e);
+      console.error(err);
     }
   };
 
@@ -100,7 +100,7 @@ const CommentsThread: React.FC = () => {
       {replyToId && (
         <div className="p-2 bg-gray-200 rounded-md">
           {getReplyingToHint()}
-          <button onClick={() => setReplyToId(null)} className="ml-2 text-red-500 hover:text-red-700">
+          <button className="ml-2 text-red-500 hover:text-red-700" onClick={() => setReplyToId(null)}>
             Cancel
           </button>
         </div>
@@ -119,7 +119,7 @@ const CommentsThread: React.FC = () => {
           }
         }}
       />
-      <button onClick={handleAddComment} className="mt-2 bg-blue-600 text-white py-1 px-4 rounded-lg">
+      <button className="mt-2 bg-blue-600 text-white py-1 px-4 rounded-lg" onClick={handleAddComment}>
         Submit
       </button>
       {renderComments(null)}
