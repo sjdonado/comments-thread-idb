@@ -64,11 +64,11 @@ const CommentsThread: React.FC = () => {
     }
   };
 
-  const getReplyingToHint = () => {
+  const getReplyCommentText = () => {
     if (!replyToId) return '';
 
     const comment = comments.find(c => c.id === replyToId);
-    return comment ? `Replying to: "${comment.text}"` : '';
+    return comment?.text;
   };
 
   const renderComments = (parentId: Comment['parentId'], depth = 0) => {
@@ -98,11 +98,12 @@ const CommentsThread: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col mt-10 gap-4">
+    <div className="flex flex-col gap-4">
       {replyToId && (
-        <div className="p-2 bg-gray-200 rounded-md">
-          {getReplyingToHint()}
-          <button className="ml-2 text-red-500 hover:text-red-700" onClick={() => setReplyToId(null)}>
+        <div className="flex flex-col justify-start p-2 bg-gray-200 rounded-md gap-2">
+          <span className="font-semibold">Replying to</span>
+          <p>{getReplyCommentText()}</p>
+          <button className="text-red-500" onClick={() => setReplyToId(null)}>
             Cancel
           </button>
         </div>
